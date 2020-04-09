@@ -39,7 +39,7 @@ describe('Counter component', () => {
 
   it('should match exact snapshot', () => {
     const { actions } = setup();
-    const counter = (
+    const canvas = (
       <div>
         <Router>
           <Counter counter={1} {...actions} />
