@@ -8,6 +8,7 @@ import { Stage, Layer, Line } from 'react-konva';
 import Process from '../containers/Process';
 import { messageType, processType } from '../reducers/canvas';
 import Message from '../containers/Message';
+import VectorTimestamps from '../containers/VectorTimestamps';
 
 type Props = {
   canvasWidth: number;
@@ -25,7 +26,7 @@ export const COORD_CENTER = {
 export const DISTANCE_BETWEEN_PROCESSES = 120;
 const PLUS_SIZE = 20;
 const PLUS_OFFSET = 30;
-const MAX_PROCESSES = 5;
+// const MAX_PROCESSES = 5;
 
 export default function CanvasStage(props: Props) {
   const {
@@ -34,7 +35,7 @@ export default function CanvasStage(props: Props) {
     processes,
     setStageRef,
     createNewProcess,
-    messages,
+    messages
   } = props;
 
   const onAddProcessClick = () => {
@@ -75,43 +76,40 @@ export default function CanvasStage(props: Props) {
                   stroke="black"
                   strokeWidth={5}
                 />
-                {processes.length < MAX_PROCESSES && (
-                  <>
-                    <Line
-                      points={[
-                        COORD_CENTER.x,
-                        COORD_CENTER.y +
-                          DISTANCE_BETWEEN_PROCESSES * (processes.length - 1) +
-                          PLUS_OFFSET,
-                        COORD_CENTER.x,
-                        COORD_CENTER.y +
-                          DISTANCE_BETWEEN_PROCESSES * (processes.length - 1) +
-                          PLUS_OFFSET +
-                          PLUS_SIZE
-                      ]}
-                      stroke="green"
-                      strokeWidth={5}
-                      onClick={onAddProcessClick}
-                    />
-                    <Line
-                      points={[
-                        COORD_CENTER.x - PLUS_SIZE / 2,
-                        COORD_CENTER.y +
-                          DISTANCE_BETWEEN_PROCESSES * (processes.length - 1) +
-                          PLUS_OFFSET +
-                          PLUS_SIZE / 2,
-                        COORD_CENTER.x + PLUS_SIZE / 2,
-                        COORD_CENTER.y +
-                          DISTANCE_BETWEEN_PROCESSES * (processes.length - 1) +
-                          PLUS_OFFSET +
-                          PLUS_SIZE / 2
-                      ]}
-                      stroke="green"
-                      strokeWidth={5}
-                      onClick={onAddProcessClick}
-                    />
-                  </>
-                )}
+                <Line
+                  points={[
+                    COORD_CENTER.x,
+                    COORD_CENTER.y +
+                      DISTANCE_BETWEEN_PROCESSES * (processes.length - 1) +
+                      PLUS_OFFSET,
+                    COORD_CENTER.x,
+                    COORD_CENTER.y +
+                      DISTANCE_BETWEEN_PROCESSES * (processes.length - 1) +
+                      PLUS_OFFSET +
+                      PLUS_SIZE
+                  ]}
+                  stroke="green"
+                  strokeWidth={5}
+                  onClick={onAddProcessClick}
+                />
+                <Line
+                  points={[
+                    COORD_CENTER.x - PLUS_SIZE / 2,
+                    COORD_CENTER.y +
+                      DISTANCE_BETWEEN_PROCESSES * (processes.length - 1) +
+                      PLUS_OFFSET +
+                      PLUS_SIZE / 2,
+                    COORD_CENTER.x + PLUS_SIZE / 2,
+                    COORD_CENTER.y +
+                      DISTANCE_BETWEEN_PROCESSES * (processes.length - 1) +
+                      PLUS_OFFSET +
+                      PLUS_SIZE / 2
+                  ]}
+                  stroke="green"
+                  strokeWidth={5}
+                  onClick={onAddProcessClick}
+                />
+                <VectorTimestamps />
               </Layer>
             </Provider>
           </Stage>

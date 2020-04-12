@@ -9,12 +9,25 @@ import {
   PROCESS_CREATE,
   EVENT_CREATE,
   MESSAGE_SENDING_FINISHED,
-  RESET_STATE
+  RESET_STATE,
+  VECTOR_TIMESTAMPS_CALCULATED,
+  RESET_VECTOR_TIMESTAMPS
 } from '../reducers/canvas';
+import { Dispatch, GetState } from '../reducers/types';
+import { calculateTimestampsMatrix } from '../clock/vector-clock';
 
-export function resetState() {
+export function resetState(type: string) {
   return {
-    type: RESET_STATE
+    type: RESET_STATE,
+    payload: {
+      type
+    }
+  };
+}
+
+export function resetVectorTimestamps() {
+  return {
+    type: RESET_VECTOR_TIMESTAMPS
   };
 }
 
@@ -29,10 +42,18 @@ export function changeCanvasSize(width: number, height: number) {
 }
 
 export function setStageRef(stageRef: Stage) {
-  return {
-    type: SET_STAGE_REF,
-    payload: {
-      stageRef
+  return (dispatch: Dispatch, getState: GetState) => {
+    const {
+      canvas: { timestampsMatrix }
+    } = getState();
+    dispatch({
+      type: SET_STAGE_REF,
+      payload: {
+        stageRef
+      }
+    });
+    if (timestampsMatrix !== null) {
+      dispatch(resetVectorTimestamps());
     }
   };
 }
@@ -65,8 +86,6 @@ export function createNewProcess() {
   };
 }
 
-// todo delete process
-
 export function createNewEvent(process: processType, x: number) {
   return {
     type: EVENT_CREATE,
@@ -77,4 +96,21 @@ export function createNewEvent(process: processType, x: number) {
   };
 }
 
-// todo delete event
+export function calculateVectorTimestamps() {
+  return (dispatch: Dispatch, getState: GetState) => {
+    const {
+      canvas: { processes, messages }
+    } = getState();
+    if (messages.length === 0) {
+      return;
+    }
+    const timestampsMatrix = calculateTimestampsMatrix(processes, messages);
+
+    dispatch({
+      type: VECTOR_TIMESTAMPS_CALCULATED,
+      payload: {
+        timestampsMatrix
+      }
+    });
+  };
+}

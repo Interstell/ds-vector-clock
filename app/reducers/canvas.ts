@@ -1,5 +1,6 @@
 import { AnyAction } from 'redux';
 import { Stage } from 'react-konva';
+import { DISTANCE_BETWEEN_PROCESSES } from '../components/CanvasStage';
 
 export const prefix = '@map/';
 export const CHANGE_CANVAS_SIZE = `${prefix}CHANGE_CANVAS_SIZE`;
@@ -15,6 +16,9 @@ export const EVENT_CREATE = `${prefix}EVENT_CREATE`;
 
 export const RESET_STATE = `${prefix}RESET_STATE`;
 
+export const VECTOR_TIMESTAMPS_CALCULATED = `${prefix}VECTOR_TIMESTAMPS_CALCULATED`;
+export const RESET_VECTOR_TIMESTAMPS = `${prefix}RESET_VECTOR_TIMESTAMPS`;
+
 export type eventType = {
   id: string;
   processId: string;
@@ -23,7 +27,7 @@ export type eventType = {
 
 export type processType = {
   id: string;
-  events?: eventType[];
+  events: eventType[];
 };
 
 export type messageType = {
@@ -46,44 +50,72 @@ export type canvasStateType = {
 
   processNameCounter: number;
   eventNameCounter: number;
+
+  timestampsMatrix: object | null;
 };
 
 function createDefaultState(): canvasStateType {
   const defaultState: canvasStateType = {
     canvasWidth: 900,
-    canvasHeight: 600,
+    canvasHeight: 500,
+
+    processes: [
+      {
+        id: 'p1',
+        events: []
+      },
+      {
+        id: 'p2',
+        events: []
+      },
+      {
+        id: 'p3',
+        events: []
+      }
+    ],
+    messages: [],
+
+    isMessageSendingState: false,
+
+    processNameCounter: 4,
+    eventNameCounter: 0,
+
+    timestampsMatrix: null
+  };
+
+  return defaultState;
+}
+
+function createSampleState(): canvasStateType {
+  const defaultState: canvasStateType = {
+    canvasWidth: 900,
+    canvasHeight: 500,
 
     processes: [
       {
         id: 'p1',
         events: [
-          {
-            id: 'A',
-            processId: 'p1',
-            x: 120
-          },
-          {
-            id: 'B',
-            processId: 'p1',
-            x: 200
-          }
+          { id: 'A', processId: 'p1', x: 100 },
+          { id: 'B', processId: 'p1', x: 250 },
+          { id: 'C', processId: 'p1', x: 450 },
+          { id: 'D', processId: 'p1', x: 650 },
+          { id: 'E', processId: 'p1', x: 750 }
         ]
       },
       {
         id: 'p2',
         events: [
-          {
-            id: 'C',
-            processId: 'p2',
-            x: 150
-          }
+          { id: 'F', processId: 'p2', x: 240 },
+          { id: 'G', processId: 'p2', x: 450 },
+          { id: 'H', processId: 'p2', x: 570 }
         ]
       },
       {
         id: 'p3',
         events: [
-          { id: 'D', processId: 'p3', x: 100 },
-          { id: 'E', processId: 'p3', x: 250 }
+          { id: 'I', processId: 'p3', x: 175 },
+          { id: 'J', processId: 'p3', x: 480 },
+          { id: 'K', processId: 'p3', x: 800 }
         ]
       }
     ],
@@ -92,16 +124,209 @@ function createDefaultState(): canvasStateType {
     isMessageSendingState: false,
 
     processNameCounter: 4,
-    eventNameCounter: 5
+    eventNameCounter: 11,
+
+    timestampsMatrix: null
   };
 
-  defaultState.messages.push({
-    id: 'A->C',
-    // @ts-ignore
-    eventFrom: defaultState.processes[0].events[0],
-    // @ts-ignore
-    eventTo: defaultState.processes[1].events[0]
-  });
+  defaultState.messages.push(
+    ...[
+      {
+        id: 'B->G',
+        // @ts-ignore
+        eventFrom: defaultState.processes[0].events[1],
+        // @ts-ignore
+        eventTo: defaultState?.processes[1]?.events[1]
+      },
+      {
+        id: 'I->F',
+        // @ts-ignore
+        eventFrom: defaultState.processes[2].events[0],
+        // @ts-ignore
+        eventTo: defaultState?.processes[1]?.events[0]
+      },
+      {
+        id: 'H->D',
+        // @ts-ignore
+        eventFrom: defaultState.processes[1].events[2],
+        // @ts-ignore
+        eventTo: defaultState.processes[0].events[3]
+      },
+      {
+        id: 'E->K',
+        // @ts-ignore
+        eventFrom: defaultState.processes[0].events[4],
+        // @ts-ignore
+        eventTo: defaultState.processes[2].events[2]
+      }
+    ]
+  );
+
+  return defaultState;
+}
+
+function createSample2State(): canvasStateType {
+  const defaultState: canvasStateType = {
+    canvasWidth: 900,
+    canvasHeight: 500,
+
+    processes: [
+      {
+        id: 'p1',
+        events: [
+          {
+            id: 'A',
+            processId: 'p1',
+            x: 89
+          },
+          {
+            id: 'B',
+            processId: 'p1',
+            x: 186
+          },
+          {
+            id: 'C',
+            processId: 'p1',
+            x: 294
+          },
+          {
+            id: 'D',
+            processId: 'p1',
+            x: 391
+          },
+          {
+            id: 'E',
+            processId: 'p1',
+            x: 501
+          },
+          {
+            id: 'F',
+            processId: 'p1',
+            x: 580
+          },
+          {
+            id: 'G',
+            processId: 'p1',
+            x: 682
+          }
+        ]
+      },
+      {
+        id: 'p2',
+        events: [
+          {
+            id: 'H',
+            processId: 'p2',
+            x: 180
+          },
+          {
+            id: 'I',
+            processId: 'p2',
+            x: 291
+          },
+          {
+            id: 'J',
+            processId: 'p2',
+            x: 620
+          }
+        ]
+      },
+      {
+        id: 'p3',
+        events: [
+          {
+            id: 'K',
+            processId: 'p3',
+            x: 139
+          },
+          {
+            id: 'L',
+            processId: 'p3',
+            x: 367
+          },
+          {
+            id: 'M',
+            processId: 'p3',
+            x: 480
+          }
+        ]
+      }
+    ],
+    messages: [
+      {
+        id: 'B->I',
+        eventFrom: {
+          id: 'B',
+          processId: 'p1',
+          x: 186
+        },
+        eventTo: {
+          id: 'I',
+          processId: 'p2',
+          x: 291
+        }
+      },
+      {
+        id: 'H->C',
+        eventFrom: {
+          id: 'H',
+          processId: 'p2',
+          x: 180
+        },
+        eventTo: {
+          id: 'C',
+          processId: 'p1',
+          x: 294
+        }
+      },
+      {
+        id: 'D->M',
+        eventFrom: {
+          id: 'D',
+          processId: 'p1',
+          x: 391
+        },
+        eventTo: {
+          id: 'M',
+          processId: 'p3',
+          x: 480
+        }
+      },
+      {
+        id: 'L->E',
+        eventFrom: {
+          id: 'L',
+          processId: 'p3',
+          x: 367
+        },
+        eventTo: {
+          id: 'E',
+          processId: 'p1',
+          x: 501
+        }
+      },
+      {
+        id: 'F->J',
+        eventFrom: {
+          id: 'F',
+          processId: 'p1',
+          x: 580
+        },
+        eventTo: {
+          id: 'J',
+          processId: 'p2',
+          x: 620
+        }
+      }
+    ],
+
+    isMessageSendingState: false,
+
+    processNameCounter: 4,
+    eventNameCounter: 0,
+
+    timestampsMatrix: null
+  };
 
   return defaultState;
 }
@@ -112,7 +337,16 @@ export default function canvas(
 ) {
   switch (action.type) {
     case RESET_STATE:
-      return createDefaultState();
+      switch (action.payload.type) {
+        case 'default':
+          return createDefaultState();
+        case 'sample':
+          return createSampleState();
+        case 'sample2':
+          return createSample2State();
+        default:
+          return createDefaultState();
+      }
     case CHANGE_CANVAS_SIZE:
       return {
         ...state,
@@ -157,7 +391,8 @@ export default function canvas(
           ...state.processes,
           { id: `p${state.processNameCounter}`, events: [] }
         ],
-        processNameCounter: state.processNameCounter + 1
+        processNameCounter: state.processNameCounter + 1,
+        canvasHeight: state.canvasHeight + DISTANCE_BETWEEN_PROCESSES
       };
     case EVENT_CREATE: {
       const processIndex = state.processes.findIndex(
@@ -172,11 +407,7 @@ export default function canvas(
             events: [
               ...action.payload.process.events,
               {
-                id: String.fromCharCode(
-                  state.eventNameCounter <= 25
-                    ? 65 + state.eventNameCounter
-                    : 97 + (state.eventNameCounter % 26)
-                ),
+                id: String.fromCharCode(65 + state.eventNameCounter),
                 processId: action.payload.process.id,
                 x: action.payload.x
               }
@@ -187,6 +418,16 @@ export default function canvas(
         eventNameCounter: state.eventNameCounter + 1
       };
     }
+    case VECTOR_TIMESTAMPS_CALCULATED:
+      return {
+        ...state,
+        timestampsMatrix: action.payload.timestampsMatrix
+      };
+    case RESET_VECTOR_TIMESTAMPS:
+      return {
+        ...state,
+        timestampsMatrix: null
+      };
 
     default:
       return state;
